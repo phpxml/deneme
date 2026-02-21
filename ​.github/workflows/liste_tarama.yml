@@ -1,9 +1,9 @@
 name: Genel_Liste_Tarayici
 on:
+  workflow_dispatch: {}
   push:
     branches:
-      - main # Dosyayı kaydettiğin an çalıştırır
-  workflow_dispatch: {} # Butonu zorla gösterir
+      - main
 
 jobs:
   tara_ve_kaydet:
@@ -14,18 +14,18 @@ jobs:
       - name: Depoyu Al
         uses: actions/checkout@v3
 
-      - name: Python Yukle
+      - name: Python Kur
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Bagimliliklar
+      - name: Paketleri Yukle
         run: pip install requests
 
-      - name: Kanalları Tara
+      - name: Sunuculari Tara
         run: python liste_tarama.py
 
-      - name: Githuba Yukle
+      - name: Githuba Gonder
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
