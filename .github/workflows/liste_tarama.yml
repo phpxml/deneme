@@ -1,1 +1,26 @@
+name: Liste_Tarama_Botu
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
 
+jobs:
+  tara:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Calistir
+        run: |
+          pip install requests
+          python liste_tarama.py
+      - name: Kaydet
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add atv.m3u
+          git commit -m "Liste guncellendi" || exit 0
+          git push
