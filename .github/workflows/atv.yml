@@ -2,14 +2,13 @@ name: ATV Link Guncelleme
 
 on:
   schedule:
-    - cron: '0 * * * *' # Her saat başı (00:00, 01:00...)
-  workflow_dispatch: # İstediğin zaman elle başlatabilmen için buton ekler
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   update-link:
     runs-on: ubuntu-latest
     
-    # GitHub'ın dosyaları değiştirebilmesi için yazma izni veriyoruz
     permissions:
       contents: write
 
@@ -29,9 +28,15 @@ jobs:
         run: python atv.py
 
       - name: Degisiklikleri Kaydet ve Yukle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add atv.m3u
-          git commit -m "ATV Linki Otomatik Güncellendi" || echo "Degisiklik yok"
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "ATV Linki Guncellendi"
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+          else
+            echo "Herhangi bir degisiklik yok, atlanıyor."
+          fi
