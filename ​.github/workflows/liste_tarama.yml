@@ -8,8 +8,6 @@ on:
 jobs:
   tara_ve_kaydet:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Depoyu Al
         uses: actions/checkout@v3
@@ -25,12 +23,12 @@ jobs:
       - name: Sunuculari Tara
         run: python liste_tarama.py
 
-      - name: Githuba Gonder
+      - name: Kaydet
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "bot@github.com"
           git config --local user.name "TaramaBotu"
           git add atv.m3u
-          git commit -m "Liste guncellendi" || exit 0
+          git commit -m "Guncellendi" || exit 0
           git push
