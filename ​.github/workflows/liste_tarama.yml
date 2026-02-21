@@ -1,4 +1,4 @@
-name: Genel_Liste_Tarayici
+name: ListeTarama
 on:
   workflow_dispatch: {}
   push:
@@ -6,29 +6,24 @@ on:
       - main
 
 jobs:
-  tara_ve_kaydet:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Depoyu Al
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Python Kur
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
       - name: Paketleri Yukle
         run: pip install requests
-
-      - name: Sunuculari Tara
+      - name: Calistir
         run: python liste_tarama.py
-
       - name: Kaydet
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --local user.email "bot@github.com"
-          git config --local user.name "TaramaBotu"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add atv.m3u
-          git commit -m "Guncellendi" || exit 0
+          git commit -m "Guncelle" || exit 0
           git push
