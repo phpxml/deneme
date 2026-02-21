@@ -1,1 +1,37 @@
+name: ATV Link Guncelleme
 
+on:
+  schedule:
+    - cron: '0 * * * *' # Her saat başı (00:00, 01:00...)
+  workflow_dispatch: # İstediğin zaman elle başlatabilmen için buton ekler
+
+jobs:
+  update-link:
+    runs-on: ubuntu-latest
+    
+    # GitHub'ın dosyaları değiştirebilmesi için yazma izni veriyoruz
+    permissions:
+      contents: write
+
+    steps:
+      - name: Depoyu Kopyala
+        uses: actions/checkout@v3
+
+      - name: Python'u Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Gerekli Kütüphaneyi Yükle
+        run: pip install requests
+
+      - name: Botu Calistir
+        run: python atv.py
+
+      - name: Degisiklikleri Kaydet ve Yukle
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add atv.m3u
+          git commit -m "ATV Linki Otomatik Güncellendi" || echo "Degisiklik yok"
+          git push
