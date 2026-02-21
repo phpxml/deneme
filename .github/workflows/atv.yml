@@ -1,4 +1,4 @@
-name: ATV Link Guncelleme
+name: ATV IDM Sniffer
 
 on:
   schedule:
@@ -6,28 +6,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-link:
+  sniff-link:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
-
     steps:
-      - name: Depoyu Kopyala
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Python'u Kur
+      - name: Python Kur
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Gerekli Kütüphaneyi Yükle
-        run: pip install requests
+      - name: Chrome ve Driver Kur (Sniffer icin)
+        run: |
+          pip install selenium webdriver-manager
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
-      - name: Botu Calistir
+      - name: IDM Modunda Calistir
         run: python atv.py
 
-      - name: Degisiklikleri Kaydet ve Yukle
+      - name: Linki Kaydet ve Gonder
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -35,8 +35,8 @@ jobs:
           git config --local user.name "GitHub Action"
           git add atv.m3u
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "ATV Linki Guncellendi"
+            git commit -m "Taze Link Yakalandı"
             git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
           else
-            echo "Herhangi bir degisiklik yok, atlanıyor."
+            echo "Link hala taze, degismemis."
           fi
