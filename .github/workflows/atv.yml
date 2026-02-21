@@ -1,4 +1,4 @@
-name: ATV IDM Sniffer
+name: ATV Guncelleme
 
 on:
   schedule:
@@ -6,37 +6,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  sniff-link:
+  update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
-
       - name: Python Kur
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
-      - name: Playwright ve Browser Kur
-        run: |
-          pip install playwright
-          playwright install chromium
-          playwright install-deps
-
+      - name: Kutuphaneleri Kur
+        run: pip install requests
       - name: Botu Calistir
         run: python atv.py
-
-      - name: Kaydet ve Yukle
+      - name: Kaydet
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add atv.m3u
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Link Guncellendi"
-            git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
-          else
-            echo "Degisiklik yok."
-          fi
+          git commit -m "Update" || exit 0
+          git push
