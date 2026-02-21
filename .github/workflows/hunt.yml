@@ -1,1 +1,25 @@
+name: Stalker Auto Checker
+on:
+  schedule:
+    - cron: '30 19 * * *' # Her akşam 19:30'da çalıştır
+  workflow_dispatch:
+jobs:
+  run-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Requests
+        run: pip install requests beautifulsoup4
+      - name: Run Scraper
+        run: python avci.py
+      - name: Save Result
+        run: |
+          git config --global user.name "AutoHunter"
+          git add gunluk_calisanlar.txt
+          git commit -m "Günlük Liste Hazır: $(date)" || exit 0
+          git push
 
