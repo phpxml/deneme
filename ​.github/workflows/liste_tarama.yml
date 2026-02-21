@@ -1,34 +1,36 @@
 name: Genel_Liste_Tarayici
 on:
-  schedule:
-    - cron: '0 */6 * * *' # 6 saatte bir otomatik çalışır
-  workflow_dispatch: # Manuel çalıştırma butonu
+  push:
+    branches:
+      - main # Dosyayı kaydettiğin an çalıştırır
+  workflow_dispatch: {} # Butonu zorla gösterir
+
 jobs:
   tara_ve_kaydet:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      - name: Depoyu Al
+        uses: actions/checkout@v3
 
-      - name: Python Kur
+      - name: Python Yukle
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Gerekli Paketleri Yukle
+      - name: Bagimliliklar
         run: pip install requests
 
-      - name: Sunuculari Alt Ust Et
+      - name: Kanalları Tara
         run: python liste_tarama.py
 
-      - name: Guncel Listeyi Kaydet
+      - name: Githuba Yukle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "bot@github.com"
           git config --local user.name "TaramaBotu"
           git add atv.m3u
-          git commit -m "Tum kanallar sunuculardan tazeledi" || exit 0
+          git commit -m "Liste guncellendi" || exit 0
           git push
-
