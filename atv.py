@@ -1,35 +1,51 @@
-import requests
+import time
+import json
 import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
-def get_atv_link():
+def idm_logic_grabber():
+    # 1. IDM gibi tarayıcıyı hazırlıyoruz (Gizli mod)
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    
+    # 2. Ağ trafiğini dinlemek için logları açıyoruz (Sniffing)
+    caps = DesiredCapabilities.CHROME
+    caps['goog:loggingPrefs'] = {'performance': 'ALL'}
+    
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options, desired_capabilities=caps)
+
     try:
-        url = "https://www.atv.com.tr/canli-yayin"
-        # Kendimizi bir tarayıcı gibi tanıtıyoruz (User-Agent)
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-            "Referer": "https://www.atv.com.tr/"
-        }
+        # 3. Sayfaya gidiyoruz ve IDM gibi bekliyoruz
+        driver.get("https://www.atv.com.tr/canli-yayin")
+        time.sleep(15) # Sayfanın ve player'ın tüm tokenları çözmesi için süre veriyoruz
+
+        # 4. IDM'in yaptığı gibi "Network" loglarını tarıyoruz
+        logs = driver.get_log("performance")
         
-        response = requests.get(url, headers=headers, timeout=15)
-        # Sayfa kaynağındaki m3u8 uzantılı dinamik linki yakalıyoruz
-        match = re.search(r'(https://[^\s^"]+?\.m3u8[^\s^"]*)', response.text)
-        
-        if match:
-            # Kaçış karakterlerini temizliyoruz
-            raw_url = match.group(1).replace('\\/', '/')
-            return raw_url
+        for entry in logs:
+            log = json.loads(entry["message"])["message"]
+            if "Network.requestServedFromCache" in log["method"] or "Network.requestWillBeSent" in log["method"]:
+                url = log["params"].get("request", {}).get("url", "")
+                # Player'ın en son ulaştığı m3u8 linkini yakala
+                if "master.m3u8" in url or "atv.m3u8" in url:
+                    # Tokenlı ve her şey bitmiş nihai linki bulduk!
+                    return url
     except Exception as e:
-        print(f"Hata oluştu: {e}")
-        return None
+        print(f"Hata: {e}")
+    finally:
+        driver.quit()
     return None
 
-# M3U formatında dosyayı oluştur
-atv_link = get_atv_link()
-if atv_link:
+# Linki al ve dosyaya yaz
+final_url = idm_logic_grabber()
+if final_url:
     with open("atv.m3u", "w", encoding="utf-8") as f:
-        f.write("#EXTM3U\n")
-        f.write("#EXTINF:-1,ATV HD\n")
-        f.write(f"{atv_link}\n")
-    print("atv.m3u başarıyla güncellendi.")
-else:
-    print("Link bulunamadı!")
+        f.write(f"#EXTM3U\n#EXTINF:-1,ATV HD\n{final_url}\n")
+    print("Link IDM mantığıyla başarıyla yakalandı!")
