@@ -9,9 +9,12 @@ def kanald_link_al():
     }
     try:
         response = requests.get(url, headers=headers, timeout=10)
+        # m3u8 linkini temiz bir şekilde ayıklıyoruz
         match = re.search(r'https?://[^\s"\'<>]+?\.m3u8[^\s"\'<>]*', response.text)
         if match:
-            return match.group(0)
+            # HTML karakterlerini (varsa) temizle
+            clean_link = match.group(0).replace('&amp;', '&')
+            return clean_link
     except:
         return None
     return None
@@ -21,4 +24,4 @@ yeni_link = kanald_link_al()
 if yeni_link:
     with open("kanald_canli.m3u", "w", encoding="utf-8") as f:
         f.write(f"#EXTM3U\n#EXTINF:-1,Kanal D HD\n{yeni_link}")
-    print("Kanal D guncellendi.")
+    print("Link başarıyla güncellendi.")
