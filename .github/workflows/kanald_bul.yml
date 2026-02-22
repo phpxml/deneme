@@ -1,0 +1,32 @@
+name: Kanal D Otomatik Guncelle
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Her 30 dakikada bir çalıştırır
+  workflow_dispatch:      # Manuel başlatma butonu ekler
+
+jobs:
+  tazele:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Depoyu Klonla
+        uses: actions/checkout@v3
+
+      - name: Python Hazırla
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Gerekli Modülleri Kur
+        run: pip install requests
+
+      - name: Linki Bul ve Yaz
+        run: python kanald_bul.py
+
+      - name: GitHub'a Geri Yukle
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add kanald_canli.m3u
+          git commit -m "Kanal D linki tazelendi" || exit 0
+          git push
