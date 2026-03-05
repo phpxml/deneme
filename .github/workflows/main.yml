@@ -1,21 +1,14 @@
-name: Build APK
-on: [push, pull_request]
-
+name: Build
+on: [push, workflow_dispatch]
 jobs:
-  build:
+  android:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build with Buildozer
-        uses: GearSwin/buildozer-action@v1
+      - uses: actions/checkout@v4
+      - uses: GearSwin/buildozer-action@v1
         with:
           command: buildozer android debug
-          repository_display_name: "Uygulamam"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: package
           path: bin/*.apk
