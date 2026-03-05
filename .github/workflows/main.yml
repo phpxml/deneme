@@ -5,21 +5,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential git zip unzip zlib1g-dev libltdl-dev libffi-dev libssl-dev autoconf autotools-dev
-          pip install --upgrade pip
-          pip install "cython<3.0.0" buildozer  # Cython sürümünü sabitledik
+          sudo apt install -y build-essential git zip unzip zlib1g-dev libltdl-dev libffi-dev libssl-dev autoconf autotools-dev python3-pip
+          # Cython'u kullanıcı dizinine değil, sistem dizinine kuruyoruz:
+          sudo pip3 install "cython<3.0.0" buildozer 
+
       - name: Build with Buildozer
         run: |
-          # Cython'un yüklendiği yeri zorla gösteriyoruz
-          export PATH=$PATH:$HOME/.local/bin
+          # Buildozer'ı sudo olmadan çalıştırıyoruz ama yolu tanıtıyoruz
           buildozer android debug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
